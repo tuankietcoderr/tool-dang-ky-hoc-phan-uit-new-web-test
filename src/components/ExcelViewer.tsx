@@ -1,11 +1,4 @@
-import { DataContext } from "@/context/DataContext";
-import { IRowOnlyId } from "@/interface/row";
-import {
-  chonMonHoc,
-  huyChonMonHoc,
-  monHocSelector,
-} from "@/store/features/mon-hoc";
-import { useAppDispatch, useAppSelector } from "@/store/hook";
+import { useSubjectStore } from "@/store/useSubjectStore";
 import {
   Spinner,
   Table,
@@ -16,38 +9,58 @@ import {
   Thead,
   Tr,
 } from "@chakra-ui/react";
-import React, { useContext } from "react";
+import React, { useMemo } from "react";
 
 function ExcelViewer() {
-  const allowIndexes = [2, 3, 5, 7, 8, 10, 11, 13];
-  const { excelData } = useContext(DataContext);
-  const dispatch = useAppDispatch();
-  const { monHocDaChon } = useAppSelector(monHocSelector);
+  const {
+    subjects,
+    selectedSubjects,
+    addSelectedSubject,
+    removeSelectedSubject,
+  } = useSubjectStore();
 
   // memoize data
-  const data = React.useMemo(() => excelData, [excelData]);
+  const data = useMemo(() => subjects, [subjects]);
 
   const handleCheckboxChange = (e: any, row: any) => {
     if (e.target.checked) {
-      dispatch(
-        chonMonHoc({
-          monHoc: {
-            id: row[0],
-            maLop: row[2],
-          } as IRowOnlyId,
-        })
-      );
+      addSelectedSubject({
+        id: row[0],
+        maLop: row[2],
+      });
       return;
     }
-    dispatch(huyChonMonHoc({ id: row[0] }));
+    removeSelectedSubject(row[0]);
   };
 
+  console.log(data);
   if (!data)
     return (
       <div className="flex justify-center pt-4">
         <Spinner />
       </div>
     );
+
+  const RenderRow = ({ row }: { row: any }) => {
+    return (
+      <Tr>
+        <Td>
+          <input
+            type="checkbox"
+            onChange={(e) => handleCheckboxChange(e, row)}
+            checked={
+              selectedSubjects.filter((monHoc) => monHoc.id === row[0]).length >
+              0
+            }
+          />
+        </Td>
+        {Object.values(row).map((cell: any, cellIndex) => (
+          <Td key={cellIndex}>{cell || ""}</Td>
+        ))}
+      </Tr>
+    );
+  };
+
   return (
     <div>
       <TableContainer>
@@ -55,41 +68,16 @@ function ExcelViewer() {
           <Thead>
             <Tr>
               <Th></Th>
-              {data &&
-                data.length > 0 &&
-                data[0].map((cell: any, cellIndex: any) => {
-                  if (allowIndexes.includes(cellIndex))
-                    return <Th key={cellIndex}>{cell}</Th>;
-                })}
+              {data.length > 0 &&
+                Object.keys(data[0]).map((cell: any, cellIndex: any) => (
+                  <Th key={cellIndex}>{cell}</Th>
+                ))}
             </Tr>
           </Thead>
           <Tbody>
-            {data
-              .slice(1)
-              .map((row: any[], rowIndex: React.Key | null | undefined) => (
-                <Tr key={rowIndex}>
-                  <Td>
-                    <input
-                      type="checkbox"
-                      onChange={(e) => handleCheckboxChange(e, row)}
-                      checked={
-                        monHocDaChon.filter((monHoc) => monHoc.id === row[0])
-                          .length > 0
-                      }
-                    />
-                  </Td>
-                  {row.map((cell, cellIndex) => {
-                    if (allowIndexes.includes(cellIndex)) {
-                      if (cellIndex === 8) {
-                        return (
-                          <Td key={cellIndex}>{cell === 0 ? "Không" : "Có"}</Td>
-                        );
-                      }
-                      return <Td key={cellIndex}>{cell || ""}</Td>;
-                    }
-                  })}
-                </Tr>
-              ))}
+            {data.map((row: any, rowIndex: React.Key | null | undefined) => (
+              <RenderRow key={rowIndex} row={row} />
+            ))}
           </Tbody>
         </Table>
       </TableContainer>

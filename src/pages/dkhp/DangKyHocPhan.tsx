@@ -1,5 +1,6 @@
 import ExcelViewer from "@/components/ExcelViewer";
 import MonHocDaChon from "@/components/MonHocDaChon";
+import SelectSubjectButton from "@/components/SelectSubjectButton";
 import { CopyIcon } from "@chakra-ui/icons";
 import { Icon, useToast } from "@chakra-ui/react";
 
@@ -43,6 +44,7 @@ const DangKyHocPhan = () => {
           <Icon as={CopyIcon} mr={2} />
           <span>Copy lớp mẫu</span>
         </button>
+        <SelectSubjectButton />
       </div>
       <ExcelViewer />
       <MonHocDaChon />

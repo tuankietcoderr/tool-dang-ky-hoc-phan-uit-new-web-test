@@ -1,5 +1,5 @@
-import { huyChonMonHoc, monHocSelector } from "@/store/features/mon-hoc";
-import { useAppDispatch, useAppSelector } from "@/store/hook";
+import { useSubjectStore } from "@/store/useSubjectStore";
+import { CheckCircleIcon, CloseIcon, WarningIcon } from "@chakra-ui/icons";
 import {
   Button,
   Divider,
@@ -17,15 +17,12 @@ import {
   TagRightIcon,
   useDisclosure,
 } from "@chakra-ui/react";
-import React from "react";
-import { CheckCircleIcon, CloseIcon, WarningIcon } from "@chakra-ui/icons";
 import { useNavigate } from "react-router-dom";
 
 const MonHocDaChon = () => {
-  const { monHocDaChon } = useAppSelector(monHocSelector);
-  const dispatch = useAppDispatch();
-  const huyChon = (id: string) => {
-    dispatch(huyChonMonHoc({ id }));
+  const { selectedSubjects, removeSelectedSubject } = useSubjectStore();
+  const cancel = (id: string) => {
+    removeSelectedSubject(id);
   };
   const { isOpen, onOpen, onClose } = useDisclosure();
 
@@ -38,23 +35,23 @@ const MonHocDaChon = () => {
       <p className="text-sm font- mb-2 font-semibold">Các môn học đã chọn</p>
       <Flex gap={2} justifyContent={"space-between"}>
         <Flex gap={2} flexWrap={"wrap"} alignItems={"center"}>
-          {monHocDaChon.length > 0 ? (
-            monHocDaChon.map((monHoc) => {
+          {selectedSubjects.length > 0 ? (
+            selectedSubjects.map((subject) => {
               return (
                 <Tag
-                  key={monHoc.id}
+                  key={subject.id}
                   variant={"outline"}
                   colorScheme="blue"
                   h="fit-content"
                 >
-                  <TagLabel fontSize={"sm"}>{monHoc.maLop}</TagLabel>
+                  <TagLabel fontSize={"sm"}>{subject.maLop}</TagLabel>
                   <TagRightIcon
                     cursor={"pointer"}
                     as={CloseIcon}
                     boxSize={4}
                     w={3}
                     h={3}
-                    onClick={() => huyChon(monHoc.id)}
+                    onClick={() => cancel(subject.id)}
                   />
                 </Tag>
               );
@@ -65,14 +62,14 @@ const MonHocDaChon = () => {
             </p>
           )}
         </Flex>
-        {monHocDaChon.length > 0 && (
+        {selectedSubjects.length > 0 && (
           <Button
             fontSize={"sm"}
             variant={"solid"}
             colorScheme="blue"
             onClick={handleOnClick}
           >
-            Đăng ký {monHocDaChon.length} lớp đã chọn
+            Đăng ký {selectedSubjects.length} lớp đã chọn
           </Button>
         )}
       </Flex>
@@ -84,7 +81,7 @@ const MonHocDaChon = () => {
 export default MonHocDaChon;
 
 function AfterClickModal({ isOpen, onClose }: any) {
-  const { monHocDaChon } = useAppSelector(monHocSelector);
+  const { selectedSubjects } = useSubjectStore();
   const navigate = useNavigate();
   return (
     <>
@@ -109,11 +106,11 @@ function AfterClickModal({ isOpen, onClose }: any) {
             <Flex gap={2} alignItems={"center"}>
               <Icon as={CheckCircleIcon} color={"blue"} />
               <p className="font-semibold text-sm">
-                {monHocDaChon.length} Lớp Thành công
+                {selectedSubjects.length} Lớp Thành công
               </p>
             </Flex>
-            {monHocDaChon.map((monHoc) => {
-              return <p key={monHoc.id}>{monHoc.maLop}</p>;
+            {selectedSubjects.map((subject) => {
+              return <p key={subject.id}>{subject.maLop}</p>;
             })}
             <Divider />
             <Flex gap={2} alignItems={"center"} mt={2}>
